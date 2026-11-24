@@ -1,0 +1,29 @@
+name: Decode email assets
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  decode:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode images
+        run: |
+          base64 -d header.png.b64 > header.png
+          base64 -d agente-ventas-email.jpg.b64 > agente-ventas-email.jpg
+          file header.png agente-ventas-email.jpg
+          identify header.png agente-ventas-email.jpg || true
+      - name: Commit binaries
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add header.png agente-ventas-email.jpg
+          if git diff --cached --quiet; then
+            echo "No binary changes"
+          else
+            git commit -m "Decode public email images"
+            git push
+          fi
